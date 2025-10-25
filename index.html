@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>まいにちのせいかつ - Kehidupan Sehari-hari</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #fdfaf6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #f4b183;
+            color: white;
+            text-align: center;
+            padding: 1.2em 0;
+        }
+        nav {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            background-color: #f4b183;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #e38d59;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        section {
+            display: none;
+            padding: 20px;
+            text-align: center;
+        }
+        table {
+            margin: 20px auto;
+            border-collapse: collapse;
+            width: 85%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            font-size: 1.1em;
+        }
+        th {
+            background-color: #fdebd0;
+        }
+        .visible {
+            display: block;
+        }
+        .question {
+            text-align: left;
+            margin: 15px auto;
+            width: 80%;
+            background-color: #fff3e6;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #f4b183;
+            transition: 0.3s;
+        }
+        .question legend {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        .question label {
+            display: block;
+            margin: 5px 0;
+            padding: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .question label:hover {
+            background-color: #fdebd0;
+        }
+        /* Gaya untuk umpan balik */
+        .question.correct {
+            background-color: #e6ffed;
+            border-left: 5px solid #4caf50;
+        }
+        .question.incorrect {
+            background-color: #ffebee;
+            border-left: 5px solid #f44336;
+        }
+        .correct-answer {
+            font-weight: bold;
+            color: #155724;
+            background-color: #d4edda;
+            padding: 6px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 6px;
+        }
+        #score {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #d2691e;
+            margin-top: 20px;
+        }
+        #resetButton {
+            display: none; /* Sembunyi secara default */
+            background-color: #757575;
+        }
+        #resetButton:hover {
+            background-color: #505050;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>まいにちのせいかつ</h1>
+        <p>Kehidupan Sehari-hari – Belajar Bahasa Jepang</p>
+    </header>
+
+    <nav>
+        <button onclick="showSection('materi')">📘 Materi</button>
+        <button onclick="showSection('latihan')">📝 Latihan Soal</button>
+    </nav>
+
+    <section id="materi" class="visible">
+        <h2>📖 Kosakata Kegiatan Sehari-hari</h2>
+        <table>
+            <tr><th>日本語</th><th>Romaji</th><th>Arti</th></tr>
+            <tr><td>おきます</td><td>okimasu</td><td>Bangun tidur</td></tr>
+            <tr><td>はをみがきます</td><td>ha o migakimasu</td><td>Menggosok gigi</td></tr>
+            <tr><td>かおをあらいます</td><td>kao o araimasu</td><td>Mencuci muka</td></tr>
+            <tr><td>あさごはんをたべます</td><td>asagohan o tabemasu</td><td>Makan pagi</td></tr>
+            <tr><td>がっこうへいきます</td><td>gakkō e ikimasu</td><td>Pergi ke sekolah</td></tr>
+            <tr><td>べんきょうします</td><td>benkyō shimasu</td><td>Belajar</td></tr>
+            <tr><td>ひるごはんをたべます</td><td>hirugohan o tabemasu</td><td>Makan siang</td></tr>
+            <tr><td>ともだちとあそびます</td><td>tomodachi to asobimasu</td><td>Bermain dengan teman</td></tr>
+            <tr><td>ばんごはんをたべます</td><td>bangohan o tabemasu</td><td>Makan malam</td></tr>
+            <tr><td>おふろにはいります</td><td>ofuro ni hairimasu</td><td>Mandi</td></tr>
+            <tr><td>テレビをみます</td><td>terebi o mimasu</td><td>Menonton TV</td></tr>
+            <tr><td>ねます</td><td>nemasu</td><td>Tidur</td></tr>
+        </table>
+    </section>
+
+    <section id="latihan">
+        <h2>🧠 Latihan Soal Pilihan Ganda</h2>
+
+        <form id="quizForm">
+            <fieldset class="question" data-q="q1">
+                <legend>1. おきます</legend>
+                <label><input type="radio" name="q1" value="a"> a. Tidur</label>
+                <label><input type="radio" name="q1" value="b"> b. Bangun tidur</label>
+                <label><input type="radio" name="q1" value="c"> c. Belajar</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q2">
+                <legend>2. はをみがきます</legend>
+                <label><input type="radio" name="q2" value="a"> a. Menggosok gigi</label>
+                <label><input type="radio" name="q2" value="b"> b. Makan pagi</label>
+                <label><input type="radio" name="q2" value="c"> c. Pergi ke sekolah</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q3">
+                <legend>3. べんきょうします</legend>
+                <label><input type="radio" name="q3" value="a"> a. Belajar</label>
+                <label><input type="radio" name="q3" value="b"> b. Tidur</label>
+                <label><input type="radio" name="q3" value="c"> c. Mandi</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q4">
+                <legend>4. がっこうへいきます</legend>
+                <label><input type="radio" name="q4" value="a"> a. Pergi ke sekolah</label>
+                <label><input type="radio" name="q4" value="b"> b. Belajar</label>
+                <label><input type="radio" name="q4" value="c"> c. Makan malam</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q5">
+                <legend>5. おふろにはいります</legend>
+                <label><input type="radio" name="q5" value="a"> a. Mandi</label>
+                <label><input type="radio" name="q5" value="b"> b. Makan</label>
+                <label><input type="radio" name="q5" value="c"> c. Menonton TV</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q6">
+                <legend>6. ねます</legend>
+                <label><input type="radio" name="q6" value="a"> a. Tidur</label>
+                <label><input type="radio" name="q6" value="b"> b. Bangun tidur</label>
+                <label><input type="radio" name="q6" value="c"> c. Belajar</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q7">
+                <legend>7. かおをあらいます</legend>
+                <label><input type="radio" name="q7" value="a"> a. Mencuci muka</label>
+                <label><input type="radio" name="q7" value="b"> b. Menggosok gigi</label>
+                <label><input type="radio" name="q7" value="c"> c. Makan siang</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q8">
+                <legend>8. テレビをみます</legend>
+                <label><input type="radio" name="q8" value="a"> a. Menonton TV</label>
+                <label><input type="radio" name="q8" value="b"> b. Membaca buku</label>
+                <label><input type="radio" name="q8" value="c"> c. Pergi ke sekolah</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q9">
+                <legend>9. ひるごはんをたべます</legend>
+                <label><input type="radio" name="q9" value="a"> a. Makan pagi</label>
+                <label><input type="radio" name="q9" value="b"> b. Makan siang</label>
+                <label><input type="radio" name="q9" value="c"> c. Makan malam</label>
+            </fieldset>
+
+            <fieldset class="question" data-q="q10">
+                <legend>10. ともだちとあそびます</legend>
+                <label><input type="radio" name="q10" value="a"> a. Bermain dengan teman</label>
+                <label><input type="radio" name="q10" value="b"> b. Belajar</label>
+                <label><input type="radio" name="q10" value="c"> c. Pergi tidur</label>
+            </fieldset>
+
+            <button type="button" onclick="checkAnswers()" id="submitButton">Lihat Nilai</button>
+            <button type="button" onclick="resetQuiz()" id="resetButton">Coba Lagi</button>
+        </form>
+
+        <div id="score" aria-live="polite"></div>
+    </section>
+
+    <script>
+        function showSection(id) {
+            document.getElementById('materi').classList.remove('visible');
+            document.getElementById('latihan').classList.remove('visible');
+            document.getElementById(id).classList.add('visible');
+        }
+
+        const correctAnswers = {
+            q1: "b", q2: "a", q3: "a", q4: "a", q5: "a",
+            q6: "a", q7: "a", q8: "a", q9: "b", q10: "a"
+        };
+
+        function checkAnswers() {
+            const allQuestions = document.querySelectorAll('.question');
+            resetStyles();
+            let score = 0;
+
+            allQuestions.forEach((questionDiv) => {
+                const qName = questionDiv.dataset.q; // use data-q to map questions
+                const selected = document.querySelector('input[name="' + qName + '"]:checked');
+
+                if (selected) {
+                    if (selected.value === correctAnswers[qName]) {
+                        score++;
+                        questionDiv.classList.add('correct');
+                    } else {
+                        questionDiv.classList.add('incorrect');
+                        const correctInput = document.querySelector('input[name="' + qName + '"][value="' + correctAnswers[qName] + '"]');
+                        if (correctInput && correctInput.parentElement) {
+                            correctInput.parentElement.classList.add('correct-answer');
+                        }
+                    }
+                } else {
+                    questionDiv.classList.add('incorrect');
+                    const correctInput = document.querySelector('input[name="' + qName + '"][value="' + correctAnswers[qName] + '"]');
+                    if (correctInput && correctInput.parentElement) {
+                        correctInput.parentElement.classList.add('correct-answer');
+                    }
+                }
+            });
+
+            const scoreEl = document.getElementById("score");
+            scoreEl.innerHTML = "Nilai kamu: " + score + "/10";
+
+            // optional short feedback message
+            if (score >= 8) {
+                scoreEl.innerHTML += " — Bagus sekali! 🎉";
+            } else if (score >= 5) {
+                scoreEl.innerHTML += " — Lumayan, coba lagi ya!";
+            } else {
+                scoreEl.innerHTML += " — Ayo latihan lagi!";
+            }
+
+            document.getElementById('submitButton').disabled = true;
+            document.querySelectorAll('#quizForm input[type="radio"]').forEach(radio => radio.disabled = true);
+
+            document.getElementById('resetButton').style.display = 'inline-block';
+        }
+
+        function resetStyles() {
+            document.querySelectorAll('.question').forEach(questionDiv => {
+                questionDiv.classList.remove('correct', 'incorrect');
+            });
+
+            document.querySelectorAll('.correct-answer').forEach(label => {
+                label.classList.remove('correct-answer');
+            });
+        }
+
+        function resetQuiz() {
+            resetStyles();
+            document.getElementById('quizForm').reset();
+            document.getElementById("score").innerHTML = "";
+            document.getElementById('submitButton').disabled = false;
+            document.querySelectorAll('#quizForm input[type="radio"]').forEach(radio => radio.disabled = false);
+            document.getElementById('resetButton').style.display = 'none';
+        }
+
+        // Materi ditampilkan secara default saat halaman dimuat
+        document.getElementById('materi').classList.add('visible');
+    </script>
+
+</body>
+</html>
