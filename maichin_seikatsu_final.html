@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>まいにちのせいかつ - Kehidupan Sehari-hari</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📘</text></svg>">
+<style>
+  :root{--accent:#f4b183;--accent-dark:#e38d59;--bg:#fdfaf6}
+  body{font-family: "Segoe UI", Roboto, system-ui, sans-serif;background:var(--bg);margin:0;color:#222}
+  header{background:var(--accent);color:#fff;padding:1.2rem;text-align:center}
+  nav{display:flex;gap:8px;justify-content:center;padding:12px}
+  button{background:var(--accent);border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer}
+  button:hover{background:var(--accent-dark)}
+  main{max-width:980px;margin:18px auto;padding:0 16px}
+  section{display:none;background:#fff;padding:18px;border-radius:10px;margin-bottom:18px;border:1px solid #fdebd0}
+  section.visible{display:block}
+  table{width:100%;border-collapse:collapse;margin-top:12px}
+  th,td{border:1px solid #eee;padding:8px;text-align:left}
+  th{background:#fdebd0}
+  h2,h3{color:#d2691e;margin:6px 0}
+  .flashcard-container{perspective:1000px;width:320px;margin:10px auto}
+  .flashcard{width:100%;height:180px;position:relative;transform-style:preserve-3d;transition:transform .6s;cursor:pointer;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .flashcard.is-flipped{transform:rotateY(180deg)}
+  .face{position:absolute;width:100%;height:100%;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;border-radius:12px;font-size:1.3rem}
+  .front{background:#fff3e6;color:#d2691e;flex-direction:column;padding:12px}
+  .front .romaji{font-size:.9rem;color:#333;margin-top:10px}
+  .back{background:#fdebd0;color:#333;transform:rotateY(180deg);padding:12px}
+  .controls{text-align:center;margin-top:12px}
+  .progress{width:100%;height:12px;background:#fdebd0;border-radius:8px;overflow:hidden;margin:8px 0}
+  .progress > span{display:block;height:100%;width:0;background:var(--accent)}
+  .question{margin:10px 0;padding:12px;border-radius:8px;background:#fff3e6;border-left:5px solid var(--accent)}
+  .question.correct{background:#e6ffed;border-left-color:#4caf50}
+  .question.incorrect{background:#ffebee;border-left-color:#f44336}
+  .correct-answer{font-weight:bold;color:#155724;background:#d4edda;padding:4px;border-radius:4px;display:inline-block;margin-top:6px}
+  .exercise{margin:12px 0;padding:12px;border-radius:8px;background:#fff3e6;border-left:5px solid var(--accent);text-align:left}
+  /* drag & drop styles */
+  .dd-board{display:flex;flex-direction:column;gap:10px}
+  .dd-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .slot{min-width:60px;min-height:36px;border:2px dashed #ffd9b8;background:#fff;padding:6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center}
+  .word{display:inline-block;padding:6px 10px;border-radius:8px;background:#fdebd0;border:1px solid #f4b183;cursor:grab;user-select:none}
+  .word.dragging{opacity:.5}
+  .controls-inline{display:flex;gap:8px;flex-wrap:wrap}
+  .small{font-size:.9rem;padding:6px 10px}
+  footer{text-align:center;color:#666;padding:12px;font-size:.9rem}
+  @media (prefers-color-scheme:dark){
+    body{background:#111;color:#e7e7e7}
+    section{background:#171717;border-color:#2a2a2a}
+    th{background:#2a2a2a}
+    .front{background:#262626;color:#f4b183}
+    .back{background:#333}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>まいにちのせいかつ</h1>
+  <p>Kehidupan Sehari-hari — Belajar Bahasa Jepang</p>
+</header>
+
+  <!-- Extra stylesheet for enhancements -->
+  <link rel="stylesheet" href="extra-styles.css">
+<nav>
+  <button onclick="showSection('intro')">🏠 Beranda</button>
+  <button onclick="showSection('materi')">📘 Materi</button>
+  <button onclick="showSection('flashcard')">📇 Flashcard</button>
+  <button onclick="showSection('latihan')">📝 Latihan Pilihan Ganda</button>
+  <button onclick="showSection('susun')">✍️ Susun Kalimat</button>
+</nav>
+
+<main>
+  <section id="intro" class="visible">
+    <h2>Selamat Datang! (ようこそ)</h2>
+    <p>Halaman ini dirancang untuk membantu mempelajari kosakata, pola kalimat, flashcard interaktif, kuis, dan latihan susun kalimat (drag &amp; drop).</p>
+    <ul>
+      <li>Gunakan tombol menu untuk berpindah.</li>
+      <li>Di bagian <strong>Susun Kalimat</strong> kamu dapat menyeret kata ke posisi yang benar lalu cek jawaban.</li>
+    </ul>
+    <p>がんばって！(Ganbatte!)</p>
+  </section>
+
+  <section id="materi">
+    <h2>📖 Kosakata Kegiatan Sehari-hari</h2>
+    <table>
+      <thead><tr><th>日本語</th><th>Romaji</th><th>Arti</th></tr></thead>
+      <tbody id="materi-body"></tbody>
+    </table>
+
+    <h3>📚 Pola Kalimat (文型 - Bunkei)</h3>
+    <table>
+      <thead><tr><th>Pola Kalimat</th><th>Contoh Kalimat</th><th>Arti</th></tr></thead>
+      <tbody>
+        <tr><td>～をします</td><td>しゅくだいをします。</td><td>Mengerjakan PR</td></tr>
+        <tr><td>～へいきます</td><td>がっこうへいきます。</td><td>Pergi ke sekolah</td></tr>
+        <tr><td>～をたべます</td><td>あさごはんをたべます。</td><td>Makan pagi</td></tr>
+        <tr><td>～とあそびます</td><td>ともだちとあそびます。</td><td>Bermain dengan teman</td></tr>
+      </tbody>
+    </table>
+
+    <h3>🗒️ Kosakata Tambahan</h3>
+    <table>
+      <thead><tr><th>日本語</th><th>Romaji</th><th>Arti</th></tr></thead>
+      <tbody>
+        <tr><td>かいしゃ</td><td>kaisha</td><td>Kantor</td></tr>
+        <tr><td>うち</td><td>uchi</td><td>Rumah</td></tr>
+        <tr><td>じかん</td><td>jikan</td><td>Waktu</td></tr>
+        <tr><td>あさ</td><td>asa</td><td>Pagi</td></tr>
+        <tr><td>ばん</td><td>ban</td><td>Malam</td></tr>
+        <tr><td>でんしゃ</td><td>densha</td><td>Kereta</td></tr>
+        <tr><td>しごと</td><td>shigoto</td><td>Pekerjaan</td></tr>
+      </tbody>
+    </table>
+
+    <h3>🗣️ Contoh Percakapan</h3>
+    <p><strong>A:</strong> まいにち なんじに おきますか。<br>
+    <strong>B:</strong> まいにち ６じに おきます。<br>
+    <em>(A: Setiap hari kamu bangun jam berapa? / B: Saya bangun jam 6.)</em></p>
+  </section>
+
+  <section id="flashcard">
+    <h2>📇 Flashcard</h2>
+    <p>Klik kartu untuk membalik. Gunakan ← → untuk navigasi. Space untuk membalik saat fokus.</p>
+    <div class="flashcard-container">
+      <div class="flashcard" id="flashcard" tabindex="0" role="button" aria-pressed="false">
+        <div class="face front">
+          <div>
+            <div id="flashcard-jp" style="font-size:1.5rem"></div>
+            <div id="flashcard-romaji" class="romaji"></div>
+          </div>
+        </div>
+        <div class="face back">
+          <div id="flashcard-arti" style="font-size:1.2rem"></div>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="controls-inline">
+        <button onclick="prevCard()">← Sebelumnya</button>
+        <button onclick="nextCard()">Berikutnya →</button>
+      </div>
+      <p id="card-counter"></p>
+    </div>
+  </section>
+
+  <section id="latihan">
+    <h2>📝 Latihan Pilihan Ganda</h2>
+    <div class="progress"><span id="progress-fill"></span></div>
+
+    <form id="quizForm">
+      <!-- questions generated by script -->
+    </form>
+    <div class="controls" style="margin-top:10px">
+      <button id="submitButton" onclick="checkAnswers()" type="button">Lihat Nilai</button>
+      <button id="resetButton" onclick="resetQuiz()" type="button" style="display:none;background:#757575">Coba Lagi</button>
+    </div>
+    <div id="score" aria-live="polite" style="margin-top:10px;font-weight:bold;color:#d2691e"></div>
+  </section>
+
+  <section id="susun">
+    <h2>✍️ Latihan Susun Kalimat (Drag &amp; Drop)</h2>
+    <p>Seret kata-kata ke slot kosong sesuai urutan sehingga membentuk kalimat Jepang yang benar. Setelah selesai tekan <strong>Periksa</strong>.</p>
+
+    <div id="dd-container" class="dd-board"></div>
+
+    <div style="margin-top:12px" class="controls">
+      <button id="checkDD" onclick="checkDD()">Periksa</button>
+      <button onclick="resetDD()" style="background:#757575">Reset</button>
+      <span id="dd-feedback" style="margin-left:12px;font-weight:600"></span>
+    </div>
+  </section>
+</main>
+
+<footer>Created for learning — まいにちのせいかつ</footer>
+
+<script>
+/* --- Vocabulary & Data --- */
+const vocabulary = [
+  { jp: "おきます", romaji: "okimasu", arti: "Bangun tidur" },
+  { jp: "はをみがきます", romaji: "ha o migakimasu", arti: "Menggosok gigi" },
+  { jp: "かおをあらいます", romaji: "kao o araimasu", arti: "Mencuci muka" },
+  { jp: "あさごはんをたべます", romaji: "asagohan o tabemasu", arti: "Makan pagi" },
+  { jp: "がっこうへいきます", romaji: "gakkō e ikimasu", arti: "Pergi ke sekolah" },
+  { jp: "べんきょうします", romaji: "benkyou shimasu", arti: "Belajar" },
+  { jp: "ひるごはんをたべます", romaji: "hirugohan o tabemasu", arti: "Makan siang" },
+  { jp: "ともだちとあそびます", romaji: "tomodachi to asobimasu", arti: "Bermain dengan teman" },
+  { jp: "ばんごはんをたべます", romaji: "bangohan o tabemasu", arti: "Makan malam" },
+  { jp: "おふろにはいります", romaji: "ofuro ni hairimasu", arti: "Mandi" },
+  { jp: "テレビをみます", romaji: "terebi o mimasu", arti: "Menonton TV" },
+  { jp: "ねます", romaji: "nemasu", arti: "Tidur" }
+];
+
+/* --- Populate Materi Table --- */
+function populateMateri(){
+  const body = document.getElementById('materi-body');
+  body.innerHTML = '';
+  vocabulary.forEach(v=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${v.jp}</td><td>${v.romaji}</td><td>${v.arti}</td>`;
+    body.appendChild(tr);
+  });
+}
+populateMateri();
+
+/* --- Navigation --- */
+function showSection(id){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('visible'));
+  document.getElementById(id).classList.add('visible');
+  if(id==='latihan') updateProgressBar();
+}
+
+/* --- Flashcard --- */
+let currentCardIndex = 0;
+const flashcard = document.getElementById('flashcard');
+function showFlashcard(index){
+  const c = vocabulary[index];
+  document.getElementById('flashcard-jp').textContent = c.jp;
+  document.getElementById('flashcard-romaji').textContent = c.romaji;
+  document.getElementById('flashcard-arti').textContent = c.arti;
+  document.getElementById('card-counter').textContent = `${index+1} / ${vocabulary.length}`;
+  flashcard.classList.remove('is-flipped');
+}
+function nextCard(){ currentCardIndex=(currentCardIndex+1)%vocabulary.length; showFlashcard(currentCardIndex); }
+function prevCard(){ currentCardIndex=(currentCardIndex-1+vocabulary.length)%vocabulary.length; showFlashcard(currentCardIndex); }
+flashcard.addEventListener('click',()=>flashcard.classList.toggle('is-flipped'));
+document.addEventListener('keydown',(e)=>{
+  const sec = document.querySelector('section.visible').id;
+  if(sec==='flashcard'){
+    if(e.key==='ArrowLeft') prevCard();
+    if(e.key==='ArrowRight') nextCard();
+    if(e.key===' ') { flashcard.classList.toggle('is-flipped'); e.preventDefault();}
+  }
+  if(['1','2','3','4','5'].includes(e.key)){
+    const map=['intro','materi','flashcard','latihan','susun'];
+    showSection(map[parseInt(e.key)-1]);
+  }
+});
+showFlashcard(0);
+
+/* --- Quiz (multiple choice) --- */
+const quizData = [
+  {q:'おきます', choices:['Tidur','Bangun tidur','Belajar'], a:1},
+  {q:'はをみがきます', choices:['Menggosok gigi','Makan pagi','Pergi ke sekolah'], a:0},
+  {q:'べんきょうします', choices:['Belajar','Tidur','Mandi'], a:0},
+  {q:'がっこうへいきます', choices:['Pergi ke sekolah','Belajar','Makan malam'], a:0},
+  {q:'おふろにはいります', choices:['Mandi','Makan','Menonton TV'], a:0},
+  {q:'ねます', choices:['Tidur','Bangun tidur','Belajar'], a:0},
+  {q:'かおをあらいます', choices:['Mencuci muka','Menggosok gigi','Makan siang'], a:0},
+  {q:'テレビをみます', choices:['Menonton TV','Membaca buku','Pergi ke sekolah'], a:0},
+  {q:'ひるごはんをたべます', choices:['Makan pagi','Makan siang','Makan malam'], a:1},
+  {q:'ともだちとあそびます', choices:['Bermain dengan teman','Belajar','Pergi tidur'], a:0}
+];
+
+function buildQuiz(){
+  const form = document.getElementById('quizForm');
+  form.innerHTML = '';
+  quizData.forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className='question';
+    div.dataset.id = i+1;
+    let html = `<p>${i+1}. ${item.q}</p>`;
+    item.choices.forEach((ch,ci)=>{
+      html += `<label><input type="radio" name="q${i}" value="${ci}"> ${String.fromCharCode(97+ci)}. ${ch}</label><br>`;
+    });
+    div.innerHTML = html;
+    form.appendChild(div);
+  });
+}
+buildQuiz();
+
+const correctAnswers = quizData.reduce((acc,it,i)=>{acc['q'+i]=String(it.a);return acc;},{});
+
+function updateProgressBar(){
+  const total = quizData.length;
+  const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+  const width = Math.round((answered/total)*100);
+  document.getElementById('progress-fill').style.width=width+'%';
+}
+document.addEventListener('change',updateProgressBar);
+
+function resetStyles(){
+  document.querySelectorAll('.question').forEach(q=>q.classList.remove('correct','incorrect'));
+  document.querySelectorAll('.correct-answer').forEach(el=>el.classList.remove('correct-answer'));
+}
+
+function checkAnswers(){
+  resetStyles();
+  let score=0;
+  document.querySelectorAll('.question').forEach(div=>{
+    const id=div.dataset.id;
+    const name='q'+(id-1);
+    const sel = document.querySelector(`input[name="${name}"]:checked`);
+    if(sel){
+      if(sel.value===correctAnswers[name]){
+        score++;
+        div.classList.add('correct');
+      } else {
+        div.classList.add('incorrect');
+        const correctLabel = document.querySelector(`input[name="${name}"][value="${correctAnswers[name]}"]`).parentElement;
+        correctLabel.classList.add('correct-answer');
+      }
+    } else {
+      div.classList.add('incorrect');
+      const correctLabel = document.querySelector(`input[name="${name}"][value="${correctAnswers[name]}"]`).parentElement;
+      correctLabel.classList.add('correct-answer');
+    }
+  });
+  let feedback='';
+  if(score===10) feedback='すごい！ Sempurna!';
+  else if(score>=8) feedback='とてもいいですね！ Sangat bagus!';
+  else if(score>=5) feedback='がんばって！ Ayo semangat!';
+  else feedback='もういちど！ Coba lagi ya!';
+  document.getElementById('score').innerHTML=`Nilai kamu: ${score}/${quizData.length}<br>${feedback}`;
+  document.getElementById('submitButton').disabled=true;
+  document.querySelectorAll('#quizForm input[type="radio"]').forEach(r=>r.disabled=true);
+  document.getElementById('resetButton').style.display='inline-block';
+}
+
+function resetQuiz(){
+  resetStyles();
+  document.getElementById('quizForm').reset();
+  document.getElementById('score').innerHTML='';
+  document.getElementById('submitButton').disabled=false;
+  document.querySelectorAll('#quizForm input[type="radio"]').forEach(r=>r.disabled=false);
+  document.getElementById('resetButton').style.display='none';
+  updateProgressBar();
+}
+
+/* --- Drag & Drop Susun Kalimat --- */
+/* Data: each item has tokens (array) and correct (joined string) */
+const ddData = [
+  { id:1, tokens:["わたしは","まいにち","おきます"], answer:"わたしは まいにち おきます" },
+  { id:2, tokens:["あさ","がっこうへ","いきます"], answer:"あさ がっこうへ いきます" },
+  { id:3, tokens:["じゅうにじに","ひるごはんを","たべます"], answer:"じゅうにじに ひるごはんを たべます" },
+  { id:4, tokens:["ばんに","ともだちと","あそびます"], answer:"ばんに ともだちと あそびます" },
+  { id:5, tokens:["わたしは","よる","ねます"], answer:"わたしは よる ねます" }
+];
+
+function shuffleArray(a){
+  return a.slice().sort(()=>Math.random()-0.5);
+}
+
+function renderDD(){
+  const container = document.getElementById('dd-container');
+  container.innerHTML = '';
+  ddData.forEach(item=>{
+    const box = document.createElement('div');
+    box.className='exercise';
+    box.dataset.id = item.id;
+    const title = document.createElement('div');
+    title.innerHTML = `<strong>Soal ${item.id}.</strong> Susun kalimat:`;
+    const slotRow = document.createElement('div');
+    slotRow.className='dd-row';
+    // create slots equal to tokens
+    item.tokens.forEach((t,idx)=>{
+      const slot = document.createElement('div');
+      slot.className='slot';
+      slot.dataset.slotIndex = idx;
+      slot.dataset.itemId = item.id;
+      slot.setAttribute('data-empty','true');
+      slotRow.appendChild(slot);
+    });
+    // word bank (shuffled)
+    const bank = document.createElement('div');
+    bank.className='dd-row';
+    bank.style.marginTop='8px';
+    const shuffled = shuffleArray(item.tokens);
+    // assign a unique id for each word so identical tokens don't conflict
+    shuffled.forEach((tok, widx)=>{
+      const w = document.createElement('div');
+      w.className='word';
+      w.draggable=true;
+      w.textContent = tok; // ensure this is hiragana text
+      // unique id per item + index
+      const wid = `word-${item.id}-${widx}`;
+      w.id = wid;
+      w.dataset.token = tok;
+      w.dataset.wordId = wid;
+      bank.appendChild(w);
+    });
+
+    // attach to box
+    box.appendChild(title);
+    box.appendChild(slotRow);
+    box.appendChild(bank);
+    container.appendChild(box);
+  });
+
+  // attach DnD listeners
+  setupDnD();
+}
+
+function setupDnD(){
+  // Use word-id transfer to avoid conflicts when tokens repeat
+  document.querySelectorAll('.word').forEach(w=>{
+    w.addEventListener('dragstart', e=>{
+      w.classList.add('dragging');
+      // transfer the exact word id so we can find the original element
+      e.dataTransfer.setData('text/plain', w.dataset.wordId);
+      e.dataTransfer.effectAllowed='move';
+    });
+    w.addEventListener('dragend', ()=>{
+      w.classList.remove('dragging');
+    });
+  });
+
+  document.querySelectorAll('.slot').forEach(slot=>{
+    slot.addEventListener('dragover', e=>{ e.preventDefault(); slot.style.background='#fffbe8'; });
+    slot.addEventListener('dragleave', e=>{ slot.style.background=''; });
+    slot.addEventListener('drop', e=>{
+      e.preventDefault();
+      slot.style.background='';
+      const wordId = e.dataTransfer.getData('text/plain');
+      if(!wordId) return;
+      const el = document.getElementById(wordId);
+      if(!el) return;
+      // if slot already has a child, move existing back to its bank
+      if(slot.children.length>0){
+        const existing = slot.children[0];
+        const existingWordId = existing.dataset.wordId;
+        const originalExisting = document.getElementById(existingWordId);
+        const parentBox = slot.closest('.exercise');
+        const bankArea = parentBox.querySelector('.dd-row:last-child');
+        if(originalExisting && bankArea) {
+          originalExisting.style.display = '';
+          bankArea.appendChild(originalExisting);
+        }
+      }
+      // clone the dragged element into the slot
+      const clone = el.cloneNode(true);
+      // ensure clone carries token and id so getDDUserAnswer can read it
+      clone.dataset.token = el.dataset.token;
+      clone.dataset.wordId = el.dataset.wordId;
+      clone.classList.remove('dragging');
+      clone.draggable = false;
+      // clicking a placed clone returns the original to its bank
+      clone.addEventListener('click', ()=>{
+        const parentBox = slot.closest('.exercise');
+        const bankArea = parentBox.querySelector('.dd-row:last-child');
+        const original = document.getElementById(clone.dataset.wordId);
+        if(original && bankArea){
+          original.style.display = '';
+          bankArea.appendChild(original);
+        }
+        slot.innerHTML = '';
+      });
+      slot.innerHTML = '';
+      slot.appendChild(clone);
+      // hide original from the bank so it can't be used twice
+      el.style.display = 'none';
+    });
+  });
+}
+
+function getDDUserAnswer(itemBox){
+  const slots = itemBox.querySelectorAll('.slot');
+  const parts = [];
+  for(const s of slots){
+    if(s.children.length>0) parts.push(s.children[0].dataset.token);
+    else parts.push(''); // placeholder
+  }
+  return parts.join(' ');
+}
+
+function checkDD(){
+  const container = document.getElementById('dd-container');
+  let total = ddData.length;
+  let correctCount = 0;
+  let messages = [];
+  ddData.forEach(item=>{
+    const box = container.querySelector(`.exercise[data-id="${item.id}"]`);
+    const user = getDDUserAnswer(box);
+    // normalize spaces
+    const normUser = user.trim().replace(/\s+/g,' ');
+    const normAns = item.answer.trim().replace(/\s+/g,' ');
+    if(normUser === normAns){
+      box.style.borderLeft = '5px solid #4caf50';
+      box.style.background = '#e6ffed';
+      correctCount++;
+    } else {
+      box.style.borderLeft = '5px solid #f44336';
+      box.style.background = '#ffebee';
+    }
+    messages.push({id:item.id, user:normUser, ans:normAns});
+  });
+  const feedback = document.getElementById('dd-feedback');
+  if(correctCount === total) feedback.textContent = `すごい！ Semua benar (${correctCount}/${total}) 🎉`;
+  else feedback.textContent = `Benar ${correctCount}/${total}. Periksa yang merah.`;
+  // store messages for debugging (not shown)
+  window._ddMessages = messages;
+}
+
+function resetDD(){
+  // re-render
+  renderDD();
+  document.getElementById('dd-feedback').textContent = '';
+}
+
+/* --- Initialize DD and UI --- */
+renderDD();
+
+/* --- Accessibility / small extras --- */
+// allow keyboard show/hide of guidance via '?'
+document.addEventListener('keydown', (e)=>{
+  if(e.key==='?'){
+    alert("Keyboard: 1-5 untuk menu. Di flashcard: ← → untuk navigasi, Space untuk balik kartu.");
+  }
+});
+</script>
+<!-- Extra features (timer, persistence, sounds) -->
+<script src="extra-features.js"></script>
+</body>
+</html>
