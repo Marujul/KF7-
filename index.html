@@ -65,8 +65,7 @@
   <button onclick="showSection('materi')">📘 Materi</button>
   <button onclick="showSection('flashcard')">📇 Flashcard</button>
   <button onclick="showSection('latihan')">📝 Latihan Pilihan Ganda</button>
-  <button onclick="showSection('susun')">✍️ Susun Kalimat</button>
-</nav>
+  </nav>
 
 <main>
   <section id="intro" class="visible">
@@ -156,18 +155,7 @@
     <div id="score" aria-live="polite" style="margin-top:10px;font-weight:bold;color:#d2691e"></div>
   </section>
 
-  <section id="susun">
-    <h2>✍️ Latihan Susun Kalimat (Drag &amp; Drop)</h2>
-    <p>Seret kata-kata ke slot kosong sesuai urutan sehingga membentuk kalimat Jepang yang benar. Setelah selesai tekan <strong>Periksa</strong>.</p>
-
-    <div id="dd-container" class="dd-board"></div>
-
-    <div style="margin-top:12px" class="controls">
-      <button id="checkDD" onclick="checkDD()">Periksa</button>
-      <button onclick="resetDD()" style="background:#757575">Reset</button>
-      <span id="dd-feedback" style="margin-left:12px;font-weight:600"></span>
-    </div>
-  </section>
+  
 </main>
 
 <footer>Created for learning — まいにちのせいかつ</footer>
